@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html>
+  <head>
+<title>Online registration for the Milarepa Camp</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link href="style/form.css" rel="stylesheet" type="text/css">
+
+<script language="JavaScript" type="text/JavaScript">
+
+function PrintReservationDetails()
+{
+  var number_of_days = 3
+  var meal_price = 9
+  var night_price = 9
+
+  var course_price = 70
+  var course_price_discount = 60
+  var child_discount = 0.5
+
+  var course_price_east = 50
+  var course_price_discount_east = 40
+  var discount_east = 0.8
+  var child_discount_east = 0.4
+
+  var deadline = new Date()
+  deadline.setFullYear(2015,3,15)
+
+  var day_name = new Array ("17 April (Friday)", "18 April (Saturday)", "19 April (Sunday)")
+  var meal_name = new Array ("breakfast", "lunch", "dinner")
+  var meal_matrix = new Array ([0, 0, 1], [1, 1, 1], [1, 0, 0])
+
+  var price_total = 0
+  var adults = 1
+  var children = 0
+  var nights = 0
+  var meals = 0
+  var discount = 0
+  var east_discount = 0
+  var country = document.form1.country.value
+  var today = new Date()
+
+  if (deadline > today)
+  {
+    discount = 1
+  }
+
+  if (country.indexOf("*") > -1)
+  {
+    east_discount = 1
+  }
+
+  data = "Please check:\n\nName: "+document.form1.firstname.value+" "+document.form1.lastname.value+"\n"
+  data += "From: "+document.form1.country.value+"\n"
+  data += "Email: "+document.form1.email.value+"\n"
+
+  if (document.form1.family.checked)
+  {
+    data += "Accompaning:\n"
+    if (document.form1.adult2.value != "")
+    {
+      data += "    1 adult\n"
+      adults = 2
+    }
+    if (document.form1.child1.value != "")
+    {
+      children++
+    }
+    if (document.form1.child2.value != "")
+    {
+      children++
+    }
+    if (children == 1)
+    {
+      data += "    1 child\n"
+    }
+    if (children == 2)
+    {
+      data += "    2 children\n"
+    }
+    if ((children > 0) && (adults == 2))
+    {
+      adults--
+      children++
+    }
+  }
+
+  if (document.form1.wholecourse.checked)
+  {
+    data += "I will attend the whole course.\n"
+    if ((discount == 1) && (east_discount == 1))
+    {
+      data += "I am entitled to the East European and the early registration discount.\n"
+      price_total += adults * course_price_discount_east + children * course_price_discount_east * child_discount
+    }
+    else if (discount == 1)
+    {
+      data += "I am entitled to the early registration discount.\n"
+      price_total += adults * course_price_discount + children * course_price_discount * child_discount
+    }
+    else if (east_discount == 1)
+    {
+      data += "I am entitled to the East European discount.\n"
+      price_total += adults * course_price_east + children * course_price_east * child_discount_east
+    }
+    else
+    {
+      price_total += adults * course_price + children * course_price * child_discount
+    }
+  }
+  else
+  {
+    nights = document.form1.leave_day.value - document.form1.arrive_day.value
+    if (nights < 0)
+    {
+      nights = 0
+    }
+    data += " I will stay for "+nights+" night(s) and\n"
+
+    var valid = 0
+    for (day = document.form1.arrive_day.value; day <= document.form1.leave_day.value; day++)
+    {
+      for (meal_number = 0; meal_number <= 2; meal_number++)
+      {
+        if (((day == document.form1.arrive_day.value) && (meal_number < document.form1.arrive_time.value)) || ((day == document.form1.leave_day.value) && (meal_number > document.form1.leave_time.value)))
+        {
+          valid = 0
+	}
+        else
+        {
+	  valid = 1
+	}
+        meals += meal_matrix[day][meal_number] * valid
+      }
+    }
+    data += " I will have "+meals+" meal(s).\n"
+
+    var course_price = nights * night_price + meals * meal_price
+
+    if (east_discount == 1)
+    {
+      data += "I am entitled to the East European discount.\n"
+      price_total += adults * course_price *  discount_east + children * course_price * child_discount_east
+    }
+    else
+    {
+      price_total += adults * course_price + children * course_price * child_discount
+    }
+  }
+
+
+  if (document.form1.vegetarian.checked)
+  {
+    data += "I would like to have vegetarian food.\n"
+  }
+  else
+  {
+    data += "I eat meat.\n"
+  }
+  if (price_total < 0 )
+  {
+    price_total = 0
+  }
+  price_total = Math.round(price_total)
+  data += "Total price: "+price_total+" euros"
+  document.form1.price.value = price_total
+
+  return(data)
+}
+
+function ValidateForm()
+{
+  if ((document.form1.firstname.value == "") || (document.form1.lastname.value == "") || (document.form1.country.value == "") || (document.form1.email.value == ""))
+  {
+    alert ("First Name, Last Name, Country and Email are mandatory.")
+    return false
+  }
+  else if ((document.form1.email.value.indexOf("@") < 0) || (document.form1.email.value.indexOf(".") < 0))
+  {
+    alert ("Invalid email address.")
+    return false
+  }
+  else if (document.form1.family.checked && (document.form1.adult2.value == "") && (document.form1.child1.value == "") && (document.form1.child2.value == ""))
+  {
+    alert ("Please name the family members.")
+    return false
+  }
+  else if ( !(document.form1.wholecourse.checked) && ( (document.form1.arrive_day.value > document.form1.leave_day.value) || ( (document.form1.arrive_day.value == document.form1.leave_day.value) && (document.form1.arrive_time.value > document.form1.leave_time.value) ) ))
+  {
+    alert("You can't leave before you have arrived.")
+    return false
+  }
+  else
+  {
+    if (confirm(PrintReservationDetails()))
+    {
+      return true
+    }
+    else
+    {
+      return false
+    }
+  }
+}
+
+function enableField(myField)
+{
+  myField.disabled = false
+  return true
+}
+
+function disableField(myField)
+{
+  myField.disabled = true
+  return true
+}
+
+function toggleFamilyFields(myField)
+{
+  if (myField.checked)
+  {
+    enableField(document.form1.adult2)
+    enableField(document.form1.child1)
+    enableField(document.form1.child2)
+  }
+  else
+    {
+    document.form1.adult2.value = ""
+    disableField(document.form1.adult2)
+    document.form1.child1.value = ""
+    disableField(document.form1.child1)
+    document.form1.child2.value = ""
+    disableField(document.form1.child2)
+  }
+}
+
+function toggleDayFields(myField)
+{
+  if (myField.checked)
+  {
+    document.form1.arrive_day.selectedIndex = 0
+    document.form1.arrive_time.selectedIndex = 0
+    document.form1.leave_day.selectedIndex = 0
+    document.form1.leave_time.selectedIndex = 0
+    disableField(document.form1.arrive_day)
+    disableField(document.form1.arrive_time)
+    disableField(document.form1.leave_day)
+    disableField(document.form1.leave_time)
+  }
+  else
+  {
+    enableField(document.form1.arrive_day)
+    enableField(document.form1.arrive_time)
+    enableField(document.form1.leave_day)
+    enableField(document.form1.leave_time)
+  }
+}
+</script>
+</head>
+<body>
+
+  <form name="form1" action="register-en.php" onSubmit="return ValidateForm()" method="post">
+        <table border="0" cellspacing="5" cellpadding="5" class="text">
+          <tr>
+
+      <td colspan="5" class="text"><span class="mainlinkLiteral">Online Registration
+           for the Milarepa Camp April 17.&ndash;19.</span></td>
+          </tr>
+          <tr bgcolor="#CCCCCC">
+            <td colspan="5" class="mainlink">1. Basic information (Red fields are mandatory.)</td>
+          </tr>
+          <tr>
+            <td><span class="mandatory">First Name</span></td>
+            <td>
+              <input maxlength=40 size=20 name="firstname"  class="textfield" value="">
+            </td>
+            <td>&nbsp; </td>
+            <td><span class="mandatory">Last Name</span></td>
+            <td>
+              <input maxlength=40 size=20 name="lastname" class="textfield"  value="">
+            </td>
+          </tr>
+          <tr>
+            <td><span class="mandatory">Country</span></td>
+            <td>
+              <select name="country" class="textfield">
+		<option value=""></option>
+		<option value="Finland">Finland</option>
+		<option value="Russia*">Russia*</option>
+		<option value="Czech*">Czech*</option>
+		<option value="Estonia*">Estonia*</option>
+		<option value="Sweden">Sweden</option>
+		<option value="Norway">Norway</option>
+		<option value="Latvia*">Latvia*</option>
+		<option value="Lithuania*">Lithuania*</option>
+		<option value="Other">Other</option>
+		<option value="Other">Other discount*</option>
+              </select><br><font size="-3">* Entitled to special discount.</font>
+            </td>
+            <td>&nbsp;</td>
+            <td><span class="mandatory">Email</span> </td>
+            <td>
+              <input maxlength=100 size=20 name="email" class="textfield" value="">
+            </td>
+          </tr>
+
+          <tr>
+            <td colspan="5" bgcolor="#CCCCCC"><span class="mainlink">2. Family information</span></td>
+          </tr>
+          <tr align="left" valign="top">
+            <td colspan="5" nowrap>
+              <input type="checkbox" name="family" value="1" onClick="toggleFamilyFields(this)">
+	      <span class="text">I will attend the course with my family.</span>
+            </td>
+          </tr>
+          <tr>
+            <td>2<sup>nd</sup> adult </td>
+            <td colspan="4">
+              <input maxlength=80 size=60 name="adult2" class="textfield" value="" disabled>
+            </td>
+          </tr>
+          <tr>
+            <td><span class="text">Child (7-17 years)</span></td>
+            <td colspan="4">
+              <input maxlength=80 size=60 name="child1" class="textfield" value="" disabled>
+            </td>
+          </tr>
+          <tr>
+            <td><span class="text">Child (7-17 years)</span></td>
+            <td colspan="4">
+              <input maxlength=80 size=60 name="child2" class="textfield" value="" disabled>
+            </td>
+          </tr>
+          <tr>
+            <td colspan="5" bgcolor="#CCCCCC"><span class="mainlink">3. Registration for the entire course</span> </td>
+          </tr>
+          <tr align="left" valign="top">
+            <td colspan="5" nowrap>
+              <input type="checkbox" checked value="1" name="wholecourse" onClick="toggleDayFields(this)">
+	      <span class="text">I will attend the whole course.</span>
+            </td>
+          </tr>
+          <tr>
+            <td colspan="5" bgcolor="#CCCCCC"> <span class="mainlink">4. Partial registration</span></td>
+          </tr>
+          <tr align="left" valign="top">
+            <td colspan="5">
+              <table border="0" cellspacing="0" cellpadding="0">
+                <tr valign="top" align="left">
+                  <td nowrap>
+		    <span class="text">I will arrive on </span>
+		  </td>
+		  <td>
+		    <select name="arrive_day" class="textfield" disabled>
+		      <option value="0">7<sup>th</sup> of May(Friday)</option>
+		      <option value="1">8<sup>th</sup> of May (Saturday)</option>		
+		      <option value="2">9<sup>th</sup> of May (Sunday)</option>		
+		    </select>
+		  </td>
+		  <td>
+		    <span class="text">&nbsp;for&nbsp</span>
+		    <select name="arrive_time" class="textfield" disabled>
+		      <option value="0">breakfast</option>
+		      <option value="1">lunch</option>		
+		      <option value="2">dinner</option>		
+		    </select>
+		  </td>
+                </tr>
+                <tr valign="top" align="left">
+                  <td nowrap>
+		    <span class="text">I will leave on </span>
+		  </td>
+		  <td>
+		    <select name="leave_day" class="textfield" disabled>
+		      <option value="0">7<sup>th</sup> of May (Friday)</option>
+		      <option value="1">8<sup>th</sup> of May (Saturday)</option>		
+		      <option value="2">9<sup>th</sup> of May (Sunday)</option>		
+		    </select>
+		  </td>
+                  <td nowrap>
+		    <span class="text">&nbsp;after&nbsp;</span>
+		    <select name="leave_time" class="textfield" disabled>
+		      <option value="0">breakfast</option>
+		      <option value="1">lunch</option>		
+		      <option value="2">dinner</option>		
+		    </select>
+		  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr align="left" valign="top">
+            <td colspan="5" class="mainlink" bgcolor="#CCCCCC">5. Vegetarian meals</td>
+          </tr>
+          <tr align="left" valign="top">
+            <td colspan="5" class="textfield_desc">
+              <table border="0" cellspacing="10" cellpadding="0">
+                <tr valign="top" align="left">
+                  <td nowrap colspan="2">
+                    <input type=checkbox name="vegetarian" value="1">
+              <span class="text">I would like to have vegetarian food.</span>
+            </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr align="left" valign="top" bgcolor="#CCCCCC">
+            <td colspan="5" class="mainlink">6. Notes </td>
+          </tr>
+          <tr align="left" valign="top">
+            <td colspan="5" class="textfield_desc">
+              <textarea name="comment" rows=4 cols=40 class="textfield" ></textarea>
+            </td>
+          </tr>
+          <tr align="left" valign="top">
+            <td colspan="5" class="textfield_desc">
+              <input type="reset" name="Reset" value="Reset" class="textfield">
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+              <input type="submit" name="Submit" value="Register &gt;&gt;&gt;" class="textfield">
+            </td>
+          </tr>
+        </table>
+    <input name="price" type="hidden">
+</form>
+<hr>
+<a href=http://www.buddhalaisuus.fi/milarepa/index.html>Back</a>
+</body>
+</html>
